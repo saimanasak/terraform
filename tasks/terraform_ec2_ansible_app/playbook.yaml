@@ -1,0 +1,20 @@
+---
+- name: Deploy Web App                                  # This is the name of the playbook
+  hosts: web                                            # The group of hosts in the inventory file where the tasks will be executed
+  become: true                                           # Use privilege escalation (e.g., sudo) for tasks requiring elevated permissions
+  tasks:                                                # Define a list of tasks to execute on the specified hosts
+    - name: Install Apache                              # Task to install the Apache web server
+      yum:
+        name: httpd                                     # The package name for Apache in the yum package manager
+        state: present                                  # Ensure the package is installed
+
+    - name: Start and Enable Apache                     # Task to start and enable Apache to run on boot
+      service:
+        name: httpd                                     # The service name for Apache
+        state: started                                  # Ensure the service is running
+        enabled: yes                                    # Ensure the service starts on boot
+
+    - name: Copy index.html to the server               # Task to copy the index.html file to the web server's root directory
+      copy:
+        src: /home/manasa/ansible_tasks/index.html      # Source path of the index.html file on the local machine
+        dest: /var/www/html/index.html                  # Destination path on the remote server
