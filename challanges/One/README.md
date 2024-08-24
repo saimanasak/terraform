@@ -1,1 +1,1 @@
-- You can find the challenges: [Here](https://www.udemy.com/course/terraform-beginner-to-advanced/)
+- Challenges are from: [Here](https://www.udemy.com/course/terraform-beginner-to-advanced/)
