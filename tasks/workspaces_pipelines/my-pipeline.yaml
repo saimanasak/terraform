@@ -1,0 +1,70 @@
+trigger: none
+
+pool:
+  name: 'manasa-pool'
+
+parameters:
+- name: environment
+  type: string
+  default: 'dev'
+  values:
+    - 'dev'
+    - 'staging'
+    - 'prod'
+
+variables:
+  - group: manasa-aws
+
+stages:
+  - stage: Terraform
+    jobs:
+      - job: Terraform_Workspaces
+        displayName: 'Terraform EC2 Automation'
+        steps:
+          # Step 1: Install AWS and Configure AWS Credentials
+          - task: Bash@3
+            displayName: 'Install AWS CLI'
+            inputs:
+                # specifies that the script is written directly within the YAML file
+                targetType: 'inline'
+                script: |
+                    sudo yum install -y aws-cli
+          - script: |
+                aws configure set aws_access_key_id $(AWS_ACCESS_KEY_ID)
+                aws configure set aws_secret_access_key $(AWS_SECRET_ACCESS_KEY)
+            displayName: 'Configure AWS Credentials'
+
+          # Step 2: Install Terraform
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: '1.9.5'
+            displayName: 'Install Terraform'
+
+          # Step 3: Initialize Terraform
+          - task: Bash@3
+            displayName: 'Initialize Terraform'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(System.DefaultWorkingDirectory)'
+              script: |
+                terraform init
+
+          # Step 4: Terraform Plan
+          - task: Bash@3
+            displayName: 'Terraform Plan'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(System.DefaultWorkingDirectory)'
+              script: |
+                echo "Running Terraform plan for environment: ${{ parameters.environment }}"
+                terraform plan -var-file=${{ parameters.environment }}.tfvars
+
+          # Step 5: Terraform Apply
+          - task: Bash@3
+            displayName: 'Terraform Apply'
+            inputs:
+              targetType: 'inline'
+              workingDirectory: '$(System.DefaultWorkingDirectory)'
+              script: |
+                echo "Running terraform apply for environment: ${{ parameters.environment }}"
+                terraform plan -var-file=${{ parameters.environment }}.tfvars
